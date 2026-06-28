@@ -1,0 +1,30 @@
+# Large raw climate and deforestation datasets
+Deforestation_by_location.csv
+deforestation_by_location.gpkg
+deforestation_by_location.qgz
+deforestation_by_location.qmd
+deforestation_by_location.xlsx
+deforestation data.qgz
+forest_gain_coordinates.csv
+forest_loss_*.csv
+forest_loss_location.csv
+forest_loss_with_coordinates.csv
+pakistan_forest_loss_2001_2024.csv
+pakistan_treecover2000 .tif
+pakistan_treecover2000 .tif.aux.xml
+pakistan_treecover2000.tif.aux.xml
+pakistan_forest_loss_by_year.csv
+
+# Python environment & cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Office document guides
+Hansen Global Forest Change.docx
+code for extracting hansen forest data.docx
+
+# QGIS local files
+*.qgd
+*.qgz~
