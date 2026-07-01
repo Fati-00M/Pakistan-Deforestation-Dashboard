@@ -161,6 +161,9 @@ function setupEventListeners() {
             return;
         }
         state.filters.yearStart = val;
+        
+        document.getElementById('date-search').value = '';
+        
         state.pagination.currentPage = 1;
         updateDashboard();
     });
@@ -173,8 +176,36 @@ function setupEventListeners() {
             return;
         }
         state.filters.yearEnd = val;
+        
+        document.getElementById('date-search').value = '';
+        
         state.pagination.currentPage = 1;
         updateDashboard();
+    });
+
+    // Specific Year Search
+    document.getElementById('date-search').addEventListener('change', (e) => {
+        const val = e.target.value; 
+        if (val) {
+            const year = parseInt(val);
+            
+            // Constrain year to available data bounds
+            const minYear = Math.min(...state.allYears);
+            const maxYear = Math.max(...state.allYears);
+            let targetYear = year;
+            if (year < minYear) targetYear = minYear;
+            if (year > maxYear) targetYear = maxYear;
+            
+            state.filters.yearStart = targetYear;
+            state.filters.yearEnd = targetYear;
+            
+            // Sync dropdowns to reflect the selected year
+            document.getElementById('year-start').value = targetYear;
+            document.getElementById('year-end').value = targetYear;
+            
+            state.pagination.currentPage = 1;
+            updateDashboard();
+        }
     });
     
     // Canopy Cover Slider
