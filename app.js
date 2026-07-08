@@ -7,6 +7,21 @@
 const PIXEL_TO_HECTARE = 0.09; // 30m x 30m pixel = 900m² = 0.09 hectares
 const PIXEL_TO_SQKM = 0.0009;  // 900m² = 0.0009 km²
 
+// Shared ApexCharts base options (function so it returns a fresh object each time)
+function buildCommonOpts() {
+    return {
+        theme: { mode: 'dark' },
+        chart: {
+            foreColor: '#8b949e',
+            background: 'transparent',
+            toolbar: { show: false },
+            fontFamily: 'Inter, sans-serif'
+        },
+        grid: { borderColor: '#21262d', strokeDashArray: 4 },
+        tooltip: { theme: 'dark' }
+    };
+}
+
 // State Management
 let state = {
     filters: {
@@ -304,10 +319,11 @@ function updateMap() {
     state.mapMarkers.forEach(m => state.map.removeLayer(m));
     state.mapMarkers = [];
     
-    const { province, district, minCanopy } = state.filters;
+    const { province, district, minCanopy, yearStart, yearEnd } = state.filters;
     
     // Filter grid points
     const activeGrid = DEFORESTATION_GRID.filter(item => {
+        if (item.y < yearStart || item.y > yearEnd) return false;
         if (province !== 'all' && item.p !== province) return false;
         if (district !== 'all' && item.d !== district) return false;
         if (item.c < minCanopy) return false;
@@ -344,6 +360,9 @@ function updateMap() {
         const popupContent = `
             <div class="map-popup-title">${cell.d}, ${cell.p}</div>
             <div class="map-popup-grid">
+                <span class="label">Year:</span>
+                <span class="value">${cell.y}</span>
+                
                 <span class="label">Lat / Lng:</span>
                 <span class="value">${cell.lat.toFixed(3)}, ${cell.lng.toFixed(3)}</span>
                 
@@ -410,7 +429,9 @@ function initCharts() {
         stroke: { curve: 'smooth', width: 3 },
         dataLabels: { enabled: false },
         series: [{ name: 'Forest Loss (ha)', data: [] }],
-        xaxis: { categories: [], labels: { rotate: -45 } },
+        xaxis: { 
+            labels: { rotate: -45 }
+        },
         yaxis: {
             title: { text: 'Area Lost (Hectares)' },
             labels: {
@@ -509,12 +530,13 @@ function initCharts() {
         },
         dataLabels: { enabled: false },
         series: [{ name: 'Forest Loss (ha)', data: [] }],
-        xaxis: { 
+        xaxis: {
+            categories: [],
+            title: { text: 'Area Lost (Hectares)' },
             labels: {
-                formatter: (val) => val.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                formatter: (val) => Number(val).toLocaleString(undefined, { maximumFractionDigits: 0 })
             }
-        },
-        yaxis: { categories: [] }
+        }
     });
     state.charts.province.render();
 
@@ -537,11 +559,12 @@ function initCharts() {
         dataLabels: { enabled: false },
         series: [{ name: 'Forest Loss (ha)', data: [] }],
         xaxis: {
+            categories: [],
+            title: { text: 'Area Lost (Hectares)' },
             labels: {
-                formatter: (val) => val.toLocaleString(undefined, { maximumFractionDigits: 0 })
+                formatter: (val) => Number(val).toLocaleString(undefined, { maximumFractionDigits: 0 })
             }
-        },
-        yaxis: { categories: [] }
+        }
     });
     state.charts.district.render();
 }
@@ -671,13 +694,36 @@ function updateTrendChart() {
     const years = Object.keys(dataMap).sort();
     const values = years.map(y => Math.round(dataMap[y]));
     
-    state.charts.trend.updateOptions({
-        xaxis: { categories: years }
+    // Destroy and recreate to ensure Y-axis autoscales to the actual data range
+    if (state.charts.trend) {
+        state.charts.trend.destroy();
+    }
+    state.charts.trend = new ApexCharts(document.getElementById('chart-yearly-trend'), {
+        ...buildCommonOpts(),
+        chart: {
+            ...buildCommonOpts().chart,
+            type: 'area',
+            height: '100%',
+            animations: { enabled: true }
+        },
+        colors: ['#ef4444'],
+        fill: {
+            type: 'gradient',
+            gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [0, 90, 100] }
+        },
+        stroke: { curve: 'smooth', width: 3 },
+        dataLabels: { enabled: false },
+        series: [{ name: 'Forest Loss (ha)', data: values }],
+        xaxis: {
+            categories: years,
+            labels: { rotate: -45 }
+        },
+        yaxis: {
+            title: { text: 'Area Lost (Hectares)' },
+            labels: { formatter: (val) => val.toLocaleString(undefined, { maximumFractionDigits: 0 }) }
+        }
     });
-    state.charts.trend.updateSeries([{
-        name: 'Forest Loss (ha)',
-        data: values
-    }]);
+    state.charts.trend.render();
 }
 
 // Chart 2 Update: Canopy Cover distribution (grouped by 10% ranges)
@@ -706,13 +752,28 @@ function updateCanopyChart() {
     const categories = Object.keys(bins);
     const values = categories.map(k => Math.round(bins[k]));
     
-    state.charts.canopy.updateOptions({
-        xaxis: { categories: categories }
+    // Destroy and recreate to ensure Y-axis autoscales to the actual data range
+    if (state.charts.canopy) {
+        state.charts.canopy.destroy();
+    }
+    state.charts.canopy = new ApexCharts(document.getElementById('chart-canopy-dist'), {
+        ...buildCommonOpts(),
+        chart: {
+            ...buildCommonOpts().chart,
+            type: 'bar',
+            height: '100%'
+        },
+        colors: ['#10b981'],
+        plotOptions: { bar: { borderRadius: 4, horizontal: false, columnWidth: '60%', distributed: false } },
+        dataLabels: { enabled: false },
+        series: [{ name: 'Forest Loss (ha)', data: values }],
+        xaxis: { categories: categories },
+        yaxis: {
+            title: { text: 'Area Lost (Hectares)' },
+            labels: { formatter: (val) => val.toLocaleString(undefined, { maximumFractionDigits: 0 }) }
+        }
     });
-    state.charts.canopy.updateSeries([{
-        name: 'Forest Loss (ha)',
-        data: values
-    }]);
+    state.charts.canopy.render();
 }
 
 // Chart 3 Update: Heatmap Matrix (Year vs Canopy Cover Bin)
@@ -770,6 +831,9 @@ function updateHeatmapMatrix() {
             data: data
         };
     });
+    state.charts.matrix.updateOptions({
+        xaxis: { categories: years }
+    });
     
     state.charts.matrix.updateSeries(series);
 }
@@ -786,13 +850,25 @@ function updateProvinceChart() {
     const sortedProvinces = Object.keys(dataMap).sort((a, b) => dataMap[b] - dataMap[a]);
     const values = sortedProvinces.map(p => Math.round(dataMap[p]));
     
-    state.charts.province.updateOptions({
-        yaxis: { categories: sortedProvinces }
+    // Destroy and re-create the chart — this is necessary because ApexCharts'
+    // updateOptions with xaxis.categories causes the axis to show indices not values
+    if (state.charts.province) {
+        state.charts.province.destroy();
+    }
+    state.charts.province = new ApexCharts(document.getElementById('chart-province-loss'), {
+        ...buildCommonOpts(),
+        chart: { ...buildCommonOpts().chart, type: 'bar', height: '100%' },
+        colors: ['#3b82f6'],
+        plotOptions: { bar: { borderRadius: 4, horizontal: true, barHeight: '60%' } },
+        dataLabels: { enabled: false },
+        series: [{ name: 'Forest Loss (ha)', data: values }],
+        xaxis: {
+            categories: sortedProvinces,
+            title: { text: 'Area Lost (Hectares)' },
+            labels: { formatter: (val) => Number(val).toLocaleString(undefined, { maximumFractionDigits: 0 }) }
+        }
     });
-    state.charts.province.updateSeries([{
-        name: 'Forest Loss (ha)',
-        data: values
-    }]);
+    state.charts.province.render();
 }
 
 // Chart 5 Update: Top 10 Deforestation Districts
@@ -808,18 +884,27 @@ function updateDistrictChart() {
     const sortedDistricts = Object.keys(dataMap)
         .sort((a, b) => dataMap[b] - dataMap[a])
         .slice(0, 10);
-        
-    const values = sortedDistricts.map(d => Math.round(dataMap[d]));
-    // Clean label names for horizontal bar display (remove "(Province)")
     const cleanCategories = sortedDistricts.map(d => d.split(' (')[0]);
+    const values = sortedDistricts.map(d => Math.round(dataMap[d]));
     
-    state.charts.district.updateOptions({
-        yaxis: { categories: cleanCategories }
+    // Destroy and re-create the chart
+    if (state.charts.district) {
+        state.charts.district.destroy();
+    }
+    state.charts.district = new ApexCharts(document.getElementById('chart-district-loss'), {
+        ...buildCommonOpts(),
+        chart: { ...buildCommonOpts().chart, type: 'bar', height: '100%' },
+        colors: ['#f59e0b'],
+        plotOptions: { bar: { borderRadius: 4, horizontal: true, barHeight: '70%' } },
+        dataLabels: { enabled: false },
+        series: [{ name: 'Forest Loss (ha)', data: values }],
+        xaxis: {
+            categories: cleanCategories,
+            title: { text: 'Area Lost (Hectares)' },
+            labels: { formatter: (val) => Number(val).toLocaleString(undefined, { maximumFractionDigits: 0 }) }
+        }
     });
-    state.charts.district.updateSeries([{
-        name: 'Forest Loss (ha)',
-        data: values
-    }]);
+    state.charts.district.render();
 }
 
 // --- Data Table Logics ---

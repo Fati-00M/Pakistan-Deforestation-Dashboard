@@ -54,7 +54,7 @@ def preprocess():
                     glat = round(round(lat / 0.05) * 0.05, 4)
                     glon = round(round(lon / 0.05) * 0.05, 4)
                     
-                    grid_key = (glat, glon, province, district)
+                    grid_key = (year, glat, glon, province, district)
                     if grid_key not in grid_agg:
                         grid_agg[grid_key] = {'count': 0, 'canopy_sum': 0}
                     grid_agg[grid_key]['count'] += 1
@@ -79,9 +79,10 @@ def preprocess():
         
     # Format grid output as array of dicts
     grid_list = []
-    for (lat, lon, province, district), info in grid_agg.items():
+    for (year, lat, lon, province, district), info in grid_agg.items():
         avg_canopy = round(info['canopy_sum'] / info['count'], 1) if info['count'] > 0 else 0
         grid_list.append({
+            'y': year,
             'lat': lat,
             'lng': lon,
             'p': province,
@@ -100,7 +101,7 @@ def preprocess():
         out_f.write("const DEFORESTATION_STATS = ")
         json.dump(stats_list, out_f, separators=(',', ':'))
         out_f.write(";\n\n")
-        out_f.write("// Grid: lat=latitude, lng=longitude, p=province, d=district, v=pixel_count, c=avg_canopy\n")
+        out_f.write("// Grid: y=year, lat=latitude, lng=longitude, p=province, d=district, v=pixel_count, c=avg_canopy\n")
         out_f.write("const DEFORESTATION_GRID = ")
         json.dump(grid_list, out_f, separators=(',', ':'))
         out_f.write(";\n")
