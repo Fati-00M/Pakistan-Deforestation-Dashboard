@@ -4,7 +4,6 @@ An interactive, high-fidelity web dashboard designed to visualize, analyze, and 
 
 This dashboard operates entirely client-side, using a preprocessed and aggregated dataset to deliver sub-second response times, interactive geospatial mapping, and advanced sorting/filtering controls.
 
-## Key Features
 
 - **Geospatial Hotspots Map**: Displays localized forest loss on a dark Leaflet canvas using color-coded proportional markers (radius scales with loss magnitude, color corresponds to canopy density classes).
 - **KPI Metrics**: Real-time stats calculating Total Deforested Area (in Hectares & Sq Km), Peak Deforestation Year, Most Affected District, and Weighted Average Canopy Cover.
@@ -17,7 +16,7 @@ This dashboard operates entirely client-side, using a preprocessed and aggregate
 - **Dynamic Search**: Live search bar to filter records instantly by province or district.
 - **Data Export**: A one-click export button to download the actively filtered/sorted tabular data into a clean CSV format.
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Structure & Layout**: HTML5 (Semantic elements)
 - **Styling & Theme**: Vanilla CSS3 (Slate dark theme, custom responsive grid, glassmorphism card panels)
@@ -49,7 +48,7 @@ Since the dataset is bundled directly inside `data.js` via JSON arrays, the dash
      ```
    - Open [http://localhost:8000](http://localhost:8000) in your web browser.
 
-## 📈 Preprocessing Raw Data
+## Preprocessing Raw Data
 
 The dashboard data is compiled from a raw 136k-row spatial dataset (`Deforestation_by_location.csv`). To rebuild or update the aggregated dataset, run:
 
