@@ -4,7 +4,7 @@ An interactive, high-fidelity web dashboard designed to visualize, analyze, and 
 
 This dashboard operates entirely client-side, using a preprocessed and aggregated dataset to deliver sub-second response times, interactive geospatial mapping, and advanced sorting/filtering controls.
 
-## 🌟 Key Features
+## Key Features
 
 - **Geospatial Hotspots Map**: Displays localized forest loss on a dark Leaflet canvas using color-coded proportional markers (radius scales with loss magnitude, color corresponds to canopy density classes).
 - **KPI Metrics**: Real-time stats calculating Total Deforested Area (in Hectares & Sq Km), Peak Deforestation Year, Most Affected District, and Weighted Average Canopy Cover.
@@ -25,7 +25,7 @@ This dashboard operates entirely client-side, using a preprocessed and aggregate
 - **Geospatial Mapping**: [Leaflet.js](https://leafletjs.com/) with CartoDB Dark Matter tiles
 - **Data Processing**: Python 3 (Preprocessing engine)
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 ├── index.html         # Main dashboard interface
@@ -36,7 +36,7 @@ This dashboard operates entirely client-side, using a preprocessed and aggregate
 └── README.md          # Project documentation
 ```
 
-## 🚀 How to Run Locally
+## How to Run Locally
 
 Since the dataset is bundled directly inside `data.js` via JSON arrays, the dashboard runs fully client-side and does not require local servers or database setups:
 
@@ -61,7 +61,7 @@ This runs in `< 2 seconds` and regenerates `data.js`.
 
 ---
 
-## 🌐 Deploying to GitHub Pages
+## Deploying to GitHub Pages
 
 To host this dashboard live on the web for free using GitHub Pages:
 
